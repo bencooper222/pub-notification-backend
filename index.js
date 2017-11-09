@@ -1,43 +1,42 @@
-var http = require("http");
-var restler = require('restler');
-var twilio = require('twilio');
-var intersect = require('array-intersection');
-var firebase = require('firebase');
+const restler = require('restler');
+const twilio = require('twilio');
+const intersect = require('array-intersection');
+const firebase = require('firebase');
 require('dotenv').config()
 
 
-var server = require('./server'); // user server(handlingMethod)
+const server = require('./server'); // use server(handlingMethod)
 
 
 
 
-const firebaseConfig = {
+
+
+firebase.initializeApp({
     apiKey: process.env.firebaseApi,
     databaseURL: process.env.firebaseDatabase
-}
-
-firebase.initializeApp(firebaseConfig);
-var database = firebase.database();
+});
+const database = firebase.database();
 
 
 var numberPairs = {};
 
 
-function handleUserRequest(data){
+function handleUserRequest(data) {
 
-    return new Promise(function(resolve, reject){
+    return new Promise(function(resolve, reject) {
         var databaseEntry = {}
         databaseEntry[data.order] = data.phone;
         console.log("runs");
-        var newPushRef = database.ref('vals').update(databaseEntry).then(function(){
+        var newPushRef = database.ref('vals').update(databaseEntry).then(function() {
             updateDatabaseOrders(); // rerequesting is just a more surefire way to make sure things don't go badly
             resolve(true);
-           
+
         })
     });
-  
-        
- 
+
+
+
 
 }
 server(handleUserRequest);
@@ -54,7 +53,7 @@ function updateDatabaseOrders() {
 
     }, errData);
 
-    
+
 }
 
 
@@ -65,7 +64,7 @@ function updateDatabaseOrders() {
  * Gets information from the pub on the orders that are up
  */
 function requestPub(processNumbers) {
-   
+
     restler.get(process.env.api).on('success', function(result, response) {
         //console.log(result);
         var orders = JSON.parse(result);
@@ -85,10 +84,10 @@ function requestPub(processNumbers) {
  * Checks all numbers that are part of the numbers that should be searched for
  */
 function checkNumbers(allNumbers, handleMatchedNumbers) {
-   if(numberPairs==undefined || numberPairs == null){
-       return;
-   } 
-    
+    if (numberPairs == undefined || numberPairs == null) {
+        return;
+    }
+
     var searchNumbers = Object.keys(numberPairs);
 
 

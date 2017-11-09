@@ -1,11 +1,11 @@
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser')
-var bcrypt = require('bcrypt');
-var cors = require('cors');
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser')
+const bcrypt = require('bcrypt');
+const cors = require('cors');
 
-var jsonParser = bodyParser.json();
-var urlParser = bodyParser.urlencoded({ extended: false })
+const jsonParser = bodyParser.json();
+const urlParser = bodyParser.urlencoded({ extended: false })
 
 if(!require('is-heroku')){ // if running locally 
     require('dotenv').config()
