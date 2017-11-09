@@ -3,16 +3,20 @@ var restler = require('restler');
 var twilio = require('twilio');
 var intersect = require('array-intersection');
 var firebase = require('firebase');
+require('dotenv').config()
 
-var config = require('./config');
+
 var server = require('./server'); // user server(handlingMethod)
 
 
 
 
+const firebaseConfig = {
+    apiKey: process.env.firebaseApi,
+    databaseURL: process.env.firebaseDatabase
+}
 
-
-firebase.initializeApp(config.firebase);
+firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 
 
@@ -62,7 +66,7 @@ function updateDatabaseOrders() {
  */
 function requestPub(processNumbers) {
    
-    restler.get(config.pubUrl).on('success', function(result, response) {
+    restler.get(process.env.api).on('success', function(result, response) {
         //console.log(result);
         var orders = JSON.parse(result);
         var orderNumbers = [];
@@ -97,12 +101,12 @@ function checkNumbers(allNumbers, handleMatchedNumbers) {
 
 
 function textOrder(orderNumber) {
-    var client = new twilio(config.twilio.uid, config.twilio.auth);
+    var client = new twilio(process.env.twilioUid, process.env.twilioAuth);
 
     client.messages.create({
             body: 'Your order, #' + orderNumber + '. is up!',
             to: numberPairs[orderNumber], // Text this number
-            from: config.twilio.phone // From a valid Twilio number
+            from: process.env.twilioPhone // From a valid Twilio number
         })
         .then((message) => console.log(message.sid));
 }

@@ -1,12 +1,15 @@
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser')
-var config = require('./config');
 var bcrypt = require('bcrypt');
 var cors = require('cors');
 
 var jsonParser = bodyParser.json();
 var urlParser = bodyParser.urlencoded({ extended: false })
+
+if(!require('is-heroku')){ // if running locally 
+    require('dotenv').config()
+}
 
 app.use(cors({ origin: 'https://benc.io' }));
 
@@ -18,7 +21,7 @@ exports = function launchServer(dataHandler){
         //console.log(req.body);
         
         
-        bcrypt.compare(req.body.passcode, config.verification, function(err, verified) {
+        bcrypt.compare(req.body.passcode,process.env.verification, function(err, verified) {
             // res == true
             if(verified){
                 var userData = req.body;
