@@ -6,6 +6,8 @@ const cors = require('cors');
 
 const jsonParser = bodyParser.json();
 const urlParser = bodyParser.urlencoded({ extended: false })
+const port = process.env.PORT || 80;
+
 
 if(!require('is-heroku')){ // if running locally 
     require('dotenv').config()
@@ -48,7 +50,7 @@ exports = function launchServer(dataHandler){
     app.get('/', function (req, res) { // just for checking
         res.send('Hello World!')
       })
-    app.listen(80);
+    app.listen(port);
 }
 
 
