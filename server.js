@@ -9,11 +9,17 @@ const urlParser = bodyParser.urlencoded({ extended: false })
 const port = process.env.PORT || 80;
 
 
-if(!require('is-heroku')){ // if running locally 
+const heroku = require('is-heroku');
+if(!heroku){ // if running locally 
     require('dotenv').config()
 }
 
+
+
+
 app.use(cors({ origin: 'https://benc.io' }));
+
+
 
 var exports = {};
 
@@ -48,7 +54,7 @@ exports = function launchServer(dataHandler){
     });
     
     app.get('/', function (req, res) { // just for checking
-        res.send('Hello World!')
+        res.redirect('https://benc.io/pub');
       })
     app.listen(port);
 }
