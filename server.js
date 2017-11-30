@@ -17,7 +17,7 @@ if(!heroku){ // if running locally
 
 
 
-app.use(cors({ origin: 'https://benc.io' }));
+app.use(cors({ origin: ['https://benc.io','https://pub.benc.io' ]}));
 
 
 
