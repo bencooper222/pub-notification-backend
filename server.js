@@ -13,14 +13,8 @@ if (!heroku) {
   // if running locally
   require("dotenv").config();
 }
+app.use(cors())
 
-app.use(
-  cors({
-    origin: ["https://benc.io", "https://pub.benc.io"],
-    optionsSuccessStatus: 200,
-    methods: 'POST, GET'
-  })
-);
 
 var exports = {};
 
