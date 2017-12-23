@@ -121,4 +121,4 @@ setInterval(function() {
 setInterval(function() {
   requestPub(checkNumbers);
   console.log("pub");
-}, 20000); // every 20 seconds, checkin with the pub
+}, 15000); // every 15 seconds, checkin with the pub
