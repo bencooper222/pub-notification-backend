@@ -15,9 +15,9 @@ if (!heroku) {
 }
 app.use(cors());
 
-let exports = {};
 
-exports = function launchServer(dataHandler) {
+
+module.exports = function launchServer(dataHandler) {
   app.post("/", urlParser, function(req, res) {
     //console.log('POST /');
     //console.log(req.body);
@@ -51,4 +51,4 @@ exports = function launchServer(dataHandler) {
   app.listen(port);
 };
 
-module.exports = exports;
+
