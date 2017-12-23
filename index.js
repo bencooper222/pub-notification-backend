@@ -18,12 +18,21 @@ function handleUserRequest(data) {
   return new Promise(function(resolve, reject) {
     let databaseEntry = {};
     databaseEntry[data.order] = data.phone;
-    console.log("runs");
+    
     let newPushRef = database
       .ref("vals")
       .update(databaseEntry)
       .then(function() {
-        updateDatabaseOrders(); // rerequesting is just a more surefire way to make sure things don't go badly
+          console.log('updated database');
+        
+        try{
+            updateDatabaseOrders(); // rerequesting is just a more surefire way to make sure things don't go badly
+            console.log('successfully downloaded updated database')
+        }  catch(err){
+            // for debugging enable
+           // console.log(err);
+           // probably should make a better dev process lel
+        }
         resolve(true);
       });
   });
@@ -120,5 +129,5 @@ setInterval(function() {
 
 setInterval(function() {
   requestPub(checkNumbers);
-  console.log("pub");
+  console.log("Pub Check");
 }, 15000); // every 15 seconds, checkin with the pub

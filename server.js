@@ -15,8 +15,6 @@ if (!heroku) {
 }
 app.use(cors());
 
-
-
 module.exports = function launchServer(dataHandler) {
   app.post("/", urlParser, function(req, res) {
     //console.log('POST /');
@@ -28,6 +26,7 @@ module.exports = function launchServer(dataHandler) {
     ) {
       // res == true
       if (verified) {
+        console.log('Verified');
         let userData = req.body;
         delete userData["passcode"]; // no need to propogate this
 
@@ -50,5 +49,3 @@ module.exports = function launchServer(dataHandler) {
   });
   app.listen(port);
 };
-
-
