@@ -13,10 +13,9 @@ if (!heroku) {
   // if running locally
   require("dotenv").config();
 }
-app.use(cors())
+app.use(cors());
 
-
-var exports = {};
+let exports = {};
 
 exports = function launchServer(dataHandler) {
   app.post("/", urlParser, function(req, res) {
@@ -29,7 +28,7 @@ exports = function launchServer(dataHandler) {
     ) {
       // res == true
       if (verified) {
-        var userData = req.body;
+        let userData = req.body;
         delete userData["passcode"]; // no need to propogate this
 
         dataHandler(userData).then(function() {
