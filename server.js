@@ -45,7 +45,7 @@ module.exports = function launchServer(dataHandler) {
 
   app.get("/", function(req, res) {
     // just for checking
-    res.redirect("https://benc.io/pub");
+    res.redirect("https://pub.benc.io");
   });
   app.listen(port);
 };
