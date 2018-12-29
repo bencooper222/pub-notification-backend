@@ -1,3 +1,5 @@
+'use strict';
+
 const app = require('express')(),
   bodyParser = require('body-parser'),
   bcrypt = require('bcrypt'),
