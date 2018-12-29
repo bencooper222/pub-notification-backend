@@ -1,133 +1,128 @@
-const restler = require("restler");
-const twilio = require("twilio");
-const intersect = require("array-intersection");
-const firebase = require("firebase");
-require("dotenv").config();
-
-const server = require("./server"); // use server(handlingMethod)
+if (!require('is-heroku')) require('dotenv').config();
+const restler = require('restler'),
+  twilioClient = require('twilio')(
+    process.env.TWILIO_UID,
+    process.env.TWILIO_AUTH,
+  ),
+  intersect = require('array-intersection'),
+  firebase = require('firebase');
 
 firebase.initializeApp({
-  apiKey: process.env.firebaseApi,
-  databaseURL: process.env.firebaseDatabase
+  apiKey: process.env.FIREBASE_API,
+  databaseURL: process.env.FIREBASE_DATABASE,
 });
 const database = firebase.database();
 
 let numberPairs = {};
 
-function handleUserRequest(data) {
-  return new Promise(function(resolve, reject) {
-    let databaseEntry = {};
+require('./server')(data => {
+  return new Promise((resolve, reject) => {
+    const databaseEntry = {};
+
     databaseEntry[data.order] = data.phone;
-    
-    let newPushRef = database
-      .ref("vals")
+
+    database
+      .ref('vals')
       .update(databaseEntry)
-      .then(function() {
-          console.log('updated database');
-        
-        try{
-            updateDatabaseOrders(); // rerequesting is just a more surefire way to make sure things don't go badly
-            console.log('successfully downloaded updated database')
-        }  catch(err){
-            // for debugging enable
-           // console.log(err);
-           // probably should make a better dev process lel
+      .then(() => {
+        console.log('updated database');
+
+        try {
+          updateDatabaseOrders(); // Rerequesting is just a more surefire way to make sure things don't go badly
+          console.log('successfully downloaded updated database');
+        } catch (err) {
+          /*
+           * For debugging enable
+           * console.log(err);
+           * probably should make a better dev process lel
+           */
         }
         resolve(true);
       });
   });
-}
-server(handleUserRequest);
+});
 
-function errData(data) {
-  console.log(data);
-}
+const updateDatabaseOrders = () => {
+  const userDataPairs = database.ref('vals');
 
-function updateDatabaseOrders() {
-  let userDataPairs = database.ref("vals");
   userDataPairs.on(
-    "value",
-    function(data) {
+    'value',
+    data => {
       numberPairs = data.val();
-      //console.log(numberPairs);
+      // Console.log(numberPairs);
     },
-    errData
+    console.error,
   );
-}
+};
 
 /*
  * Gets information from the pub on the orders that are up
  */
-function requestPub(processNumbers) {
-  restler.get(process.env.api).on("success", function(result, response) {
-    //console.log(result);
-    let orders = JSON.parse(result);
-    let orderNumbers = [];
+const requestPub = processNumbers => {
+  restler.get(process.env.API).on('success', (result, response) => {
+    // Console.log(result);
+    const orders = typeof result === 'object' ? result : JSON.parse(result),
+      orderNumbers = orders.map(el => el.order_id);
 
-    for (let i = 0; i < orders.length; i++) {
-      orderNumbers.push(orders[i]["order_id"]);
-    }
+    processNumbers(orderNumbers, orderNumbers => {
+      for (let i = 0; i < orderNumbers.length; i++) {
+        textOrder(orderNumbers[i]);
+        // Console.log(orderNumbers[i]);
 
-    processNumbers(orderNumbers, handleMatchedNumbers);
+        database
+          .ref(`vals/${orderNumbers[i]}`)
+          .remove() // Finished with order, get rid of it in database
+          .then(() => {
+            console.log('Remove succeeded.');
+          });
+      }
+    });
   });
-}
+};
 
 /*
  * Checks all numbers that are part of the numbers that should be searched for
  */
-function checkNumbers(allNumbers, handleMatchedNumbers) {
-  if (numberPairs == undefined || numberPairs == null) {
-    return;
-  }
+const checkNumbers = (allNumbers, handleMatchedNumbers) => {
+  if (numberPairs == null) return;
 
-  const searchNumbers = Object.keys(numberPairs);
-
-  const foundOrderNumbers = intersect(allNumbers, searchNumbers);
+  const searchNumbers = Object.keys(numberPairs),
+    foundOrderNumbers = intersect(allNumbers, searchNumbers);
 
   handleMatchedNumbers(foundOrderNumbers);
-}
+};
 
-function textOrder(orderNumber) {
-  const client = new twilio(process.env.twilioUid, process.env.twilioAuth);
+const textOrder = orderNumber => {
+  // const client = new twilio(process.env.TWILIO_UID, process.env.TWILIO_AUTH);
 
-  client.messages
+  twilioClient.messages
     .create({
-      body: "Your order, #" + orderNumber + ". is up!",
+      body: `Your order, #${orderNumber}. is up!`,
       to: numberPairs[orderNumber], // Text this number
-      from: process.env.twilioPhone // From a valid Twilio number
+      from: process.env.TWILIO_PHONE, // From a valid Twilio number
     })
     .then(message => console.log(message.sid));
-}
+};
 
 /*
- * Iterates through matched numbers to text them about their order
+
+
+/*
+ *RequestPub(checkNumbers)
+ *handleMatchedNumbers([201]);
  */
-function handleMatchedNumbers(orderNumbers) {
-  for (let i = 0; i < orderNumbers.length; i++) {
-    textOrder(orderNumbers[i]);
-    //console.log(orderNumbers[i]);
-
-    database
-      .ref("vals/" + orderNumbers[i])
-      .remove() // finished with order, get rid of it in database
-      .then(function() {
-        console.log("Remove succeeded.");
-      });
-  }
-}
-
-//requestPub(checkNumbers)
-//handleMatchedNumbers([201]);
 /*
-updateDatabaseOrders();
+ * UpdateDatabaseOrders();
+ * requestPub(checkNumbers);
+ * setInterval(function() {
+ * updateDatabaseOrders();
+ * console.log('database');
+ * }, 300000);
+ */
 requestPub(checkNumbers);
-setInterval(function() {
-    updateDatabaseOrders();
-    console.log('database');
-}, 300000);
-*/
+console.log('Pub Check');
 
-setInterval(function() {
+setInterval(() => {
   requestPub(checkNumbers);
-  console.log("Pub Check");
-}, 15000); // every 15 seconds, checkin with the pub
+  console.log('Pub Check');
+}, 15000); // Every 15 seconds, checkin with the pub

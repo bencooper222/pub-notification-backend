@@ -1,51 +1,48 @@
-const express = require("express");
-const app = express();
-const bodyParser = require("body-parser");
-const bcrypt = require("bcrypt");
-const cors = require("cors");
+const app = require('express')(),
+  bodyParser = require('body-parser'),
+  bcrypt = require('bcrypt'),
+  cors = require('cors'),
+  urlParser = bodyParser.urlencoded({ extended: false }),
+  port = process.env.PORT || 80,
+  heroku = require('is-heroku');
 
-const jsonParser = bodyParser.json();
-const urlParser = bodyParser.urlencoded({ extended: false });
-const port = process.env.PORT || 80;
-
-const heroku = require("is-heroku");
-if (!heroku) {
-  // if running locally
-  require("dotenv").config();
-}
 app.use(cors());
 
 module.exports = function launchServer(dataHandler) {
-  app.post("/", urlParser, function(req, res) {
-    //console.log('POST /');
-    //console.log(req.body);
+  app.post('/', urlParser, (req, res) => {
+    /*
+     * Console.log('POST /');
+     * console.log(req.body);
+     */
 
-    bcrypt.compare(req.body.passcode, process.env.verification, function(
-      err,
-      verified
-    ) {
-      // res == true
-      if (verified) {
-        console.log('Verified');
-        let userData = req.body;
-        delete userData["passcode"]; // no need to propogate this
+    bcrypt.compare(
+      req.body.passcode,
+      process.env.VERIFICATION,
+      (err, verified) => {
+        // Res == true
+        if (verified) {
+          console.log('Verified');
+          const userData = req.body;
 
-        dataHandler(userData).then(function() {
-          res.sendStatus(200);
-        });
+          delete userData.passcode; // No need to propogate this
 
-        //res.end();
-      } else {
-        res.sendStatus(401); //unauthorized
-      }
-    });
+          dataHandler(userData).then(() => {
+            res.sendStatus(200);
+          });
 
-    // handle query and return status message
+          // Res.end();
+        } else {
+          res.sendStatus(401); // Unauthorized
+        }
+      },
+    );
+
+    // Handle query and return status message
   });
 
-  app.get("/", function(req, res) {
-    // just for checking
-    res.redirect("https://pub.benc.io");
+  app.get('/', (req, res) => {
+    // Just for checking
+    res.redirect('https://pub.benc.io');
   });
   app.listen(port);
 };
